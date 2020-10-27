@@ -45,6 +45,7 @@ zBackstepping_impl::zBackstepping_impl(zBackstepping *self, const LayoutPosition
   desc->SetElementName(4, 0, "u+i+d+offset");
   state = new Matrix(self, desc, floatType, name);
   delete desc;
+  self->AddDataToLog(state);
 
   GroupBox *reglages_groupbox = new GroupBox(position, name);
   T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s",0, 1, 0.01);

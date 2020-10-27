@@ -184,6 +184,16 @@ MultiAgentApp::MultiAgentApp(string broadcast,TargetController *controller): Uav
     attQuat = new attQuatBkstp(setup_myTab->At(1,1),"Attitude Quaternion");
     attQuat->UseDefaultPlot(graph_law_angles->LastRowLastCol());
 
+    getFrameworkManager()->AddDeviceToLog(z_Ctrl);
+    getFrameworkManager()->AddDeviceToLog(xCtrl);
+    getFrameworkManager()->AddDeviceToLog(yCtrl);
+    getFrameworkManager()->AddDeviceToLog(xFormBkstp);
+    getFrameworkManager()->AddDeviceToLog(yFormBkstp);
+    getFrameworkManager()->AddDeviceToLog(attQuat);
+
+
+
+
     GroupBox *RelDistx1 = new GroupBox(setup_myTab_MA->At(0,1), "Rel Dist x F1");
     for(int i = 0; i < 3 ; i++){
         for(int j = 0; j < 3; j++){

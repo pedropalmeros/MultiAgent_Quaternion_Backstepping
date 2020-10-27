@@ -50,7 +50,7 @@ private:
   flair::filter::attQuatBkstp *self;
 
   // matrix
-  flair::core::Matrix *state;
+  flair::core::Matrix *state,*output;
 
   flair::gui::DoubleSpinBox *T, *kp, *ki, *kd, *sat, *sati;
 

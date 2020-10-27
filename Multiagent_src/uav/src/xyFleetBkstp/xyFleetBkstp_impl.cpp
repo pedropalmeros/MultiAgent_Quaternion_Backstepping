@@ -40,13 +40,14 @@ xyFleetBkstp_impl::xyFleetBkstp_impl(xyFleetBkstp *self, const LayoutPosition *p
   self->input = new Matrix(self, 9, 1, floatType, name);
 
   MatrixDescriptor *desc = new MatrixDescriptor(5, 1);
-  desc->SetElementName(0, 0, "x_0");
-  desc->SetElementName(1, 0, "x_1");
-  desc->SetElementName(2, 0, "x_2");
+  desc->SetElementName(0, 0, "pos_x4_0");
+  desc->SetElementName(1, 0, "pos_x4_1");
+  desc->SetElementName(2, 0, "pos_x4_2");
   desc->SetElementName(3, 0, "Ctrl");
   desc->SetElementName(4, 0, "Protocol");
   state = new Matrix(self, desc, floatType, name);
   delete desc;
+  self->AddDataToLog(state);
 
   GroupBox *reglages_groupbox = new GroupBox(position, name);
   T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s",0, 1, 0.01);

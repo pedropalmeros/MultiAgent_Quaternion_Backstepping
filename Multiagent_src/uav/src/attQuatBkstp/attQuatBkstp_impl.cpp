@@ -25,6 +25,20 @@
 #include <math.h>
 #include "Eigen/Dense"
 
+#include <Matrix.h>
+#include <Layout.h>
+#include <LayoutPosition.h>
+#include <DoubleSpinBox.h>
+#include <Vector3DSpinBox.h>
+#include <GroupBox.h>
+#include <Quaternion.h>
+#include <AhrsData.h>
+#include <DataPlot1D.h>
+#include <math.h>
+#include <Euler.h>
+
+#include <IODevice.h>
+
 
 using namespace std;
 
@@ -49,13 +63,31 @@ attQuatBkstp_impl::attQuatBkstp_impl(attQuatBkstp *self, const LayoutPosition *p
   // init matrix
   self->input = new Matrix(self, 11, 1, floatType, name);
 
-  MatrixDescriptor *desc = new MatrixDescriptor(4, 1);
+  MatrixDescriptor* desc = new MatrixDescriptor(18, 1);
   desc->SetElementName(0, 0, "qe0");
   desc->SetElementName(1, 0, "qe1");
   desc->SetElementName(2, 0, "qe2");
   desc->SetElementName(3, 0, "qe3");
-  state = new Matrix(self, desc, floatType, name);
+  desc->SetElementName(4, 0, "Qquad.q0");
+  desc->SetElementName(5, 0, "Qquad.q1");
+  desc->SetElementName(6, 0, "Qquad.q2");
+  desc->SetElementName(7, 0, "Qquad.q3");
+  desc->SetElementName(8, 0, "Q_d.q0");
+  desc->SetElementName(9, 0, "Q_d.q1");
+  desc->SetElementName(10, 0, "Q_d.q2");
+  desc->SetElementName(11, 0, "Q_d.q3");
+  desc->SetElementName(12, 0, "Quad_Euler.roll");
+  desc->SetElementName(13, 0, "Quad_Euler.pitch");
+  desc->SetElementName(14, 0, "Quad_Euler.yaw");
+  desc->SetElementName(15, 0, "Quad_Euler_d.roll");
+  desc->SetElementName(16, 0, "Quad_Euler_d.pitch");
+  desc->SetElementName(17, 0, "Quad_Euler_d.yaw");  
+  state = new flair::core::Matrix(self, desc, floatType, name);
+
   delete desc;
+
+
+
 
   GroupBox *reglages_groupbox = new GroupBox(position, name);
   T = new DoubleSpinBox(reglages_groupbox->NewRow(), "period, 0 for auto", " s", 0, 1, 0.01);
@@ -68,6 +100,10 @@ attQuatBkstp_impl::attQuatBkstp_impl(attQuatBkstp *self, const LayoutPosition *p
   k3=new DoubleSpinBox(reglages_groupbox->NewRow(),"k3:",-1000,1000,100);
   l3=new DoubleSpinBox(reglages_groupbox->NewRow(),"l3:",-1000,1000,100);
   satQ = new DoubleSpinBox(reglages_groupbox->NewRow(), "satQ:", 0, 1, 0.1);
+
+  self->AddDataToLog(state);
+
+
 
 
 
@@ -110,6 +146,7 @@ void attQuatBkstp_impl::UpdateFrom(const io_data *data) {
   Quaternionf q_d(input->ValueNoMutex(4,0),input->ValueNoMutex(5,0),input->ValueNoMutex(6,0),input->ValueNoMutex(7,0));
   Quaternionf Omega(0.0,input->ValueNoMutex(8,0), input->ValueNoMutex(9,0), input->ValueNoMutex(10,0));
 
+
   //cout << "Quaternion creation ok" << endl; 
 
   //cout << " q0:"<<q_d.w() <<" q1:"<< q_d.x() << " q2:"<<q_d.y() <<" q3:"<< q_d.z() << endl;
@@ -118,9 +155,16 @@ void attQuatBkstp_impl::UpdateFrom(const io_data *data) {
   input->ReleaseMutex();
 
 
+
   //Once the quaternions have been created they need to be normalied
   q.normalize();
   q_d.normalize();
+  flair::core::Quaternion Qquad(q.w(), q.x(), q.y(), q.z());
+  flair::core::Quaternion Q_d(q_d.w(),q_d.x(),q_d.y(),q_d.z()); 
+
+  flair::core::Euler Quad_Euler = Qquad.flair::core::Quaternion::ToEuler();
+  flair::core::Euler Quad_Euler_d = Q_d.flair::core::Quaternion::ToEuler();
+
 
   //cout << "Quaternion Noamalization ok" << endl; 
 
@@ -209,6 +253,25 @@ void attQuatBkstp_impl::UpdateFrom(const io_data *data) {
   state->SetValueNoMutex(1, 0, q_e.x());
   state->SetValueNoMutex(2, 0, q_e.y());
   state->SetValueNoMutex(3, 0, q_e.z());
+  state->SetValueNoMutex(4, 0, Qquad.q0);
+  state->SetValueNoMutex(5, 0, Qquad.q1);
+  state->SetValueNoMutex(6, 0, Qquad.q2);
+  state->SetValueNoMutex(7, 0, Qquad.q3);
+  state->SetValueNoMutex(8, 0, Q_d.q0);
+  state->SetValueNoMutex(9, 0, Q_d.q1);
+  state->SetValueNoMutex(10, 0, Q_d.q2);
+  state->SetValueNoMutex(11, 0, Q_d.q3);
+  state->SetValueNoMutex(12, 0, Quad_Euler.roll);
+  state->SetValueNoMutex(13, 0, Quad_Euler.pitch);
+  state->SetValueNoMutex(14, 0, Quad_Euler.yaw);
+  state->SetValueNoMutex(15, 0, Quad_Euler_d.roll);
+  state->SetValueNoMutex(16, 0, Quad_Euler_d.pitch);
+  state->SetValueNoMutex(17, 0, Quad_Euler_d.yaw);  
+
+
+
+
+
   state->ReleaseMutex();
 
   self->output->SetValue(0, 0, Ctrl_sat(0,0));
